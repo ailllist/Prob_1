@@ -1,0 +1,24 @@
+n = 100;
+p = 0.2;
+tot = 1000000;
+
+counting_arr = zeros(1, n);
+avg_arr = zeros(1, n);
+GT = zeros(1, n);
+
+for i = 1:tot
+    count_sel = 0;
+    for j = 1:n
+        if rand(1) < p
+            count_sel = count_sel + 1;
+        else
+        end
+    end
+    counting_arr(count_sel) = counting_arr(count_sel) + 1;
+end
+
+for i = 1:length(avg_arr)
+    avg_arr(i) = counting_arr(i) / tot;
+end
+
+for i = 1:length(GT)
