@@ -22,6 +22,7 @@ for i = 1:length(avg_arr)
     probability = counting_arr(i) / tot;
     avg_arr(i) = probability;
     if (i==1)
+        CDF_arr(i) = probability;
     else
         CDF_arr(i) = CDF_arr(i-1) + probability;
     end
