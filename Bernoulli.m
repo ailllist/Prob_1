@@ -15,18 +15,21 @@ avg = sum(Y)/length(Y);
 
 oat = [1-avg avg];
 obt = [0 1];
+CDF_arr = [0, avg, 1, 1];
 
 figure(1)
-bar(obt, oat, 0.1)
+stem([0 1], oat);
+% bar(obt, oat, 0.1)
 xlim([-0.5 1.5])
 ylim([-0.5 1.5])
 title("PMF, Bernoulli")
 
 figure(2)
 hold on
-ylim([-1 2])
-plot([-1 0], [0 0], "b")
-plot([0 1], [1-avg 1-avg], "b")
-plot([1 2], [1 1], "b")
+stairs([-1 0 1 2], CDF_arr)
+ylim([-1 3])
+% plot([-1 0], [0 0], "b")
+% plot([0 1], [1-avg 1-avg], "b")
+% plot([1 2], [1 1], "b")
 title("CDF, Bernoulli")
 
