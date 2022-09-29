@@ -1,6 +1,9 @@
-k = 6;
+clear
+clc
+% raise는 빠르고 fall은 느림
+k = 4;
 p = 0.2;
-tot = 10000000;
+tot = 1000000;
 cnt_arr = zeros(1, 200);
 avg_arr = zeros(1, 200);
 CDF_arr = zeros(1, 200);
@@ -21,6 +24,7 @@ for i = 1:tot
         end
     end
     cnt_arr(idx) = cnt_arr(idx) + 1;
+    
 end
 
 for i = 1:length(cnt_arr)
@@ -37,16 +41,33 @@ for i = 1:length(GT)
     if i < k
         continue;
     else
-        GT(i) = comb(i - 1, k - 1)*(p^k)*((1-p)^(i-k));
+        res = comb(i - 1, k - 1)*(p^k)*((1-p)^(i-k));
+        GT(i) = res;
+        if res <= 1e-10 % 너무 작으면 오류가 남 그래서 미리 끊어준다.
+            break; 
+        end
     end
 end
 
 figure(1)
 stem(avg_arr, "r")
 title("PMF, Pascal")
-ylim([-0.1, 0.3])
+ylim([-0.02, 0.1])
+xlabel("number of event")
+ylabel("probability")
 
 figure(2)
 stairs(CDF_arr)
 title("CDF, Pascal")
 ylim([-0.2, 1.2])
+
+figure(3)
+hold on
+stem(avg_arr, "-.^r")
+stem(GT, "--og")
+legend(["generated", "GT"]) % legend
+title("generated vs GT") % title 선언
+xlim([-10, 100]) % ~100이내로 제한
+ylim([-0.02, 0.1]) % PMF와 마찬가지로 ~0.5로 제한
+xlabel("number of event") % x축 = event가 일어난 횟수
+ylabel("probability") % y축 = 확률
