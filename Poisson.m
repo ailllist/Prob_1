@@ -15,7 +15,7 @@ counting_arr = zeros(1, n+1); % 단일 poisson r.v에서
 avg_arr = zeros(1, n+1); % counting_arr에서 추출한 확률을 저장하는 array
 % PMF는 avg_arr를 plot한 결과물이다.
 CDF_arr = zeros(1, n+1); % avg_arr를 통해 구한 CDF를 저장하는 array
-GT = zeros(1, n+1); % 수식을 통해 얻은 참값
+GT = zeros(1, n+1); % 수식을 통해 얻은 값
 
 for i = 1:tot % poisson r.v를 여러번 생성.
     count_sel = 0; % Event가 발생한 횟수를 기록하는 변수
@@ -32,7 +32,7 @@ for i = 1:tot % poisson r.v를 여러번 생성.
 end
 
 for i = 1:length(avg_arr) % avg_arr, PMF 생성부
-    probability = counting_arr(i) / tot; % i-1 = Event가 발생한 횟수
+    probability = counting_arr(i) / tot; % i = Event가 발생한 횟수 (i-1)
     % Event가 발생한 횟수 / 전체 시행 횟수 = poisson r.v 확률로 보았다.
     avg_arr(i) = probability; % avg_arr, PMF에 추가
     if (i==1) % CDF 생성, idx가 1인 경우
@@ -55,7 +55,7 @@ plot_CDF_arr = zeros(1, n+3); % CDF를 그릴 때 event가 한번도 일어나�
 % 않은 경우에(idx=1) poisson은 확률이 대체로 0이 아니기 때문에 
 % CDF를 더 이쁘기 그리기 위해 CDF값이 0 (x축: -2, -1)을 추가해 주었다.
 for i = 1:length(plot_CDF_arr) % plot를 위한 CDF array 생성
-    if i <= 2 % CDF array의 앞부분 2곳에
+    if i <= 2 % plot_CDF_array의 앞부분 2곳에
         plot_CDF_arr(i) = 0; % CDF값이 0임을 추가
     else % 그 외의 경우
         plot_CDF_arr(i) = CDF_arr(i-2); % CDF_arr의 값을 저장
@@ -63,7 +63,7 @@ for i = 1:length(plot_CDF_arr) % plot를 위한 CDF array 생성
 end
 
 figure(1) % PMF plot
-x = 0:length(avg_arr) - 1; % x축을 0부터 시작하게끔 한다.
+x = 0:length(avg_arr)-1; % x값을 0부터 시작하게끔 한다.
 stem(x, avg_arr, "r") % discrete 하므로 
 % discrete를 가장 잘 나타내는 stem함수를 통해 나타내었다.
 title("PMF, Poisson") % title 선언
@@ -81,13 +81,13 @@ ylim([-0.5, 1.5]) % 0~1사이에 CDF value가 분포하므로 적절한 값 설�
 xlabel("number of event") % x축 = event가 일어난 횟수
 ylabel("CDF value") % y축 = CDF 값
 
-figure(3) % GT data 와의 비교
+figure(3) % GT data와의 비교
 hold on % PMF (generated)와 GT data를 동시에 plot하기 위해 hold해줌
-x = 0:length(avg_arr) - 1; % x축을 0부터 시작하게끔 한다.
+x = 0:length(avg_arr)-1; % x값을 0부터 시작하게끔 한다.
 stem(x, avg_arr, "-.^r") % PMF를 그릴 때 GT data와의 명료한 비교를 위해
 stem(x, GT, "--og") % -.^r, --og를 사용
 legend(["generated", "GT"]) % legend
-title("generated vs GT") % title 선언
+title("generated vs GT (Poisson)") % title 선언
 xlim([-10, 100]) % ~100이내로 제한
 ylim([-0.1, 0.5]) % PMF와 마찬가지로 ~0.5로 제한
 xlabel("number of event") % x축 = event가 일어난 횟수

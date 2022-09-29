@@ -1,48 +1,60 @@
 clear
 clc
 
-n = 20;
-p = 0.2;
-tot = 1000000;
+n = 20; % 시행 횟수
+p = 0.2; % bernoulli 확률
+tot = 1000000; % binomial r.v 생성 횟수
 
-counting_arr = zeros(1, n+1);
-avg_arr = zeros(1, n+1);
-GT = zeros(1, n+1);
-CDF_arr = zeros(1, n+1);
+counting_arr = zeros(1, n+1); % 단일 binomial r.v에서
+% Event가 일어남을 기록하는 array
+% 이때 index가 사건이 일어난 횟수에 대응되지만 binomial r.v의 경우
+% 사건이 일어나지 않을 수도 있기 때문에 index가 0인 경우를 고려하기 위
+% 배열에 1칸의 여유공간을 두어 Event가 한번도 발생하지 않은 경우를 집어넣음
+% 즉 index=1은 event가 0번 일어난 경우 index=2는 event가 1번 일어난 경우를
+% 의미한다.
+avg_arr = zeros(1, n+1); % counting_arr에서 추출한 확률을 저장하는 array
+% PMF는 avg_arr를 plot한 결과물이다.
+GT = zeros(1, n+1); % 수식을 통해 얻은 값
+CDF_arr = zeros(1, n+1); % avg_arr를 통해 구한 CDF를 저장하는 array
 
-for i = 1:tot
-    count_sel = 0;
-    for j = 1:n
-        if rand(1) < p
-            count_sel = count_sel + 1;
-        else
+for i = 1:tot % binomial r.v를 여러번 생성.
+    count_sel = 0; % Event가 발생한 횟수를 기록하는 변수
+    for j = 1:n % binomial r.v를 생성. n번의 시행을 한다.
+        if rand(1) < p % bernoulli r.v로 접근하기에, 
+            % rand(1)이 p보다 작은경우를 event가 발생한 경우로 본다.
+            count_sel = count_sel + 1; % event가 발생하였기 때문에 count.
+        else % 발생하지 않으면 넘어간다.
         end
     end
     counting_arr(count_sel+1) = counting_arr(count_sel+1) + 1;
+    % counting_arr에 event가 발생한 횟수를 기록한다. 0 -> 1 (idx)이다.
 end
 
-for i = 1:length(avg_arr)
-    probability = counting_arr(i) / tot;
-    avg_arr(i) = probability;
-    if (i==1)
-        CDF_arr(i) = probability;
-    else
-        CDF_arr(i) = CDF_arr(i-1) + probability;
+for i = 1:length(avg_arr) % PMF 생성부
+    probability = counting_arr(i) / tot; % i: event가 발생한 횟수 (i-1)
+    % event가 발생한 횟수 / 전체 시행 횟수 = 확률로 보았다.
+    avg_arr(i) = probability; % avg_arr, PMF에 확률 추가
+    if (i==1) % CDF값을 구할 때 초기값은 없기 때문에
+        CDF_arr(i) = probability; % 확률만 더한다
+    else % 그 외에는
+        CDF_arr(i) = CDF_arr(i-1) + probability; % 이전값을 참조하여
+        % CDF값을 구한다.
     end
 end
 
-for i = 1:length(GT)
-    if i == 0
-        continue;
+for i = 1:length(GT) % GT data 생성
+    if i == 0 % 자연스러운 plot을 위해
+        continue; % 1칸씩 민다.
     end
     GT(i) = comb(n, i-1)*(p^(i-1))*((1-p)^(n-(i-1)));
+    % 수식에 기반해 Generation
 end
 
 plot_CDF_arr = zeros(1, n+3); % CDF를 그릴 때 event가 한번도 일어나지 
-% 않은 경우에(idx=1) poisson은 확률이 대체로 0이 아니기 때문에 
+% 않은 경우에(idx=1) binomial은 확률이 대체로 0이 아니기 때문에 
 % CDF를 더 이쁘기 그리기 위해 CDF값이 0 (x축: -2, -1)을 추가해 주었다.
 for i = 1:length(plot_CDF_arr) % plot를 위한 CDF array 생성
-    if i <= 2 % CDF array의 앞부분 2곳에
+    if i <= 2 % plot_CDF_array의 앞부분 2곳에
         plot_CDF_arr(i) = 0; % CDF값이 0임을 추가
     else % 그 외의 경우
         plot_CDF_arr(i) = CDF_arr(i-2); % CDF_arr의 값을 저장
@@ -50,32 +62,48 @@ for i = 1:length(plot_CDF_arr) % plot를 위한 CDF array 생성
 end
 
 err_arr = GT - avg_arr;
+err_arr = abs(err_arr./GT);
+for i = 1:length(err_arr)
+    if err_arr(i) == 1
+        err_arr(i) = 0;
+    end
+end
 
-figure(1)
-x = 0:length(avg_arr) - 1;
-stem(x, avg_arr, "r")
-title("PMF, Binomial")
-xlim([-10, n + 10])
-ylim([-0.1, 0.2])
-xlabel("number of event")
-ylabel("probability")
+y_max = max(avg_arr);
 
-figure(2)
-x = -2:length(CDF_arr)-1;
-stairs(x, plot_CDF_arr)
-title("CDF, Binomial")
+figure(1) % PMF plot
+x = 0:length(avg_arr)-1; % x값을 0부터 시작하게끔 한다.
+stem(x, avg_arr, "r") % discrete함을 잘 나타내는 stem함수를 사용하였다.
+title("PMF, Binomial") % title 선언
+xlim([-10, n + 10]) % binomial의 경우 모든 정의역을 볼 수 있도록 하였다.
+ylim([-0.1, y_max + 0.1]) % 최대 확률보다 0.1만큼 더 보게끔 하였다.
+xlabel("number of event") % x축 선언
+ylabel("probability") % y축 선언
+
+figure(2) % CDF plot
+x = -2:length(CDF_arr)-1; % x축을 -2 ~ len(CDF_arr)-1만큼 하였다.
+stairs(x, plot_CDF_arr) % 계단함수로 CDF를 plot
+title("CDF, Binomial") % title 산언
 xlabel("number of event") % x축 = event가 일어난 횟수
 ylabel("CDF value") % y축 = CDF 값
-ylim([-0.5, 1.5])
+ylim([-0.5, 1.5]) % CDF를 표현하기 적당한 y축 범위
 
-figure(3)
+figure(3) % GT data와의 비교
 hold on
-x = 0:length(avg_arr) - 1;
+x = 0:length(avg_arr)-1;
 stem(x, avg_arr, "-.^r")
 stem(x, GT, "--og")
 legend(["generated", "GT"])
-title("generated vs GT")
+title("generated vs GT (Binomial)")
 xlim([-10, n + 10])
-ylim([-0.1, 0.2])
+ylim([-0.1, y_max + 0.1])
 xlabel("number of event")
 ylabel("probability")
+
+figure(4) % 상대 오차 plot
+x = 0:length(err_arr)-1;
+bar(x, err_arr, 0.3, "red")
+title("error ratio")
+ylim([-0.01, 1])
+xlabel("number of event")
+ylabel("error rate")
