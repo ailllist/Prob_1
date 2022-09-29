@@ -35,6 +35,9 @@ end
 
 figure(1)
 stem(avg_arr, "r")
+title("PMF, Pascal")
+ylim([-0.1, 0.3])
 
 figure(2)
 stairs(CDF_arr)
+ylim([-0.2, 1.2])
