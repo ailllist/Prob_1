@@ -1,13 +1,13 @@
 clear
 clc
 
-n = 20; % 시행 횟수
-p = 0.2; % bernoulli 확률
-tot = 1000000; % binomial r.v 생성 횟수
+n = 100; % 시행 횟수
+p = 0.2; % Bernoulli 확률 p
+tot = 1000000; % Binomial r.v 생성 횟수
 
-counting_arr = zeros(1, n+1); % 단일 binomial r.v에서
+counting_arr = zeros(1, n+1); % 단일 Binomial r.v에서
 % Event가 일어남을 기록하는 array
-% 이때 index가 사건이 일어난 횟수에 대응되지만 binomial r.v의 경우
+% 이때 index가 사건이 일어난 횟수에 대응되지만 Binomial r.v의 경우
 % 사건이 일어나지 않을 수도 있기 때문에 index가 0인 경우를 고려하기 위
 % 배열에 1칸의 여유공간을 두어 Event가 한번도 발생하지 않은 경우를 집어넣음
 % 즉 index=1은 event가 0번 일어난 경우 index=2는 event가 1번 일어난 경우를
@@ -61,15 +61,20 @@ for i = 1:length(plot_CDF_arr) % plot를 위한 CDF array 생성
     end
 end
 
-err_arr = GT - avg_arr;
-err_arr = abs(err_arr./GT);
-for i = 1:length(err_arr)
-    if err_arr(i) == 1
-        err_arr(i) = 0;
+GT_CDF = zeros(1, n+3); % GT data를 토대로 CDF 생성
+for i = 1:length(GT_CDF) % plot의 목적이므로 추가 작업 필요
+    if i <= 2 % plot_CDF_arr와 구조를 유사하게 생성
+        GT_CDF(i) = 0;
+    else % CDF 생성
+        if i == 3 
+            GT_CDF(i) = GT(i-2);
+        else
+            GT_CDF(i) = GT(i-2) + GT_CDF(i-1);
+        end
     end
 end
 
-y_max = max(avg_arr);
+y_max = max(avg_arr); % ylim을 위해 최대 확률을 구한다.
 
 figure(1) % PMF plot
 x = 0:length(avg_arr)-1; % x값을 0부터 시작하게끔 한다.
@@ -83,27 +88,30 @@ ylabel("probability") % y축 선언
 figure(2) % CDF plot
 x = -2:length(CDF_arr)-1; % x축을 -2 ~ len(CDF_arr)-1만큼 하였다.
 stairs(x, plot_CDF_arr) % 계단함수로 CDF를 plot
-title("CDF, Binomial") % title 산언
+title("CDF, Binomial") % title 선언
 xlabel("number of event") % x축 = event가 일어난 횟수
 ylabel("CDF value") % y축 = CDF 값
 ylim([-0.5, 1.5]) % CDF를 표현하기 적당한 y축 범위
 
 figure(3) % GT data와의 비교
-hold on
-x = 0:length(avg_arr)-1;
-stem(x, avg_arr, "-.^r")
-stem(x, GT, "--og")
-legend(["generated", "GT"])
-title("generated vs GT (Binomial)")
+hold on % PMF (generated)와 GT data를 동시에 plot하기 위해 hold해줌
+x = 0:length(avg_arr)-1; % x값을 0부터 시작하게끔 한다.
+stem(x, avg_arr, "-.^r") % PMF를 그릴 때 GT data와의 명료한 비교를 위해
+stem(x, GT, "--og") % -.^r, --og를 사용
+legend(["generated", "GT"]) % legend
+title("generated vs GT (Binomial, PMF)") % title 선언
 xlim([-10, n + 10])
-ylim([-0.1, y_max + 0.1])
+ylim([-0.1, y_max + 0.1]) % 최대 확률보다 0.1만큼 더 보게끔 하였다.
 xlabel("number of event")
 ylabel("probability")
 
-figure(4) % 상대 오차 plot
-x = 0:length(err_arr)-1;
-bar(x, err_arr, 0.3, "red")
-title("error ratio")
-ylim([-0.01, 1])
-xlabel("number of event")
-ylabel("error rate")
+figure(4) % GT data와의 비교 (CDF)
+hold on
+x = -2:length(CDF_arr)-1; % x축을 -2 ~ len(CDF_arr)-1만큼 하였다.
+stairs(x, plot_CDF_arr, "-.^r")
+stairs(x, GT_CDF, "--og")
+ylim([-0.5 1.5])
+legend(["generated", "GT"]) % legend
+title("generated vs GT (Binomial, CDF)")
+xlabel("number of event") % x축 = 성공여부 (0: 실패, 1: 성공)
+ylabel("CDF value") % y축 = CDF 값

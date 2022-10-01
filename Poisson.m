@@ -1,7 +1,7 @@
 clear
 clc
 
-alp = 1; % 평균적으로 발생하는 Event
+alp = 8; % 평균적으로 발생하는 Event
 n = 100000; % slot의 개수
 p = alp/n; % p, alp는 전체 기간동안 발생하는 Event의 수 이므로
 % n으로 나누면 확률에 근사할 것이라 생각해 alp/n을 확률로 삼음
@@ -27,7 +27,7 @@ for i = 1:tot % poisson r.v를 여러번 생성.
         end
     end
     counting_arr(count_sel+1) = counting_arr(count_sel+1) + 1;
-    % counting_arr에 Event가 발생한 횟수 기록, 0 -> 1 (idx)로 match시켰다.
+    % counting_arr에 Event가 발생한 횟수 기록, 0 -> 1 (index)로 match시켰다.
     i % 코드 실행이 오래걸리기 때문에 진행상황 체크용도
 end
 
@@ -62,6 +62,21 @@ for i = 1:length(plot_CDF_arr) % plot를 위한 CDF array 생성
     end
 end
 
+GT_CDF = zeros(1, n+3); % GT data를 토대로 CDF 생성
+for i = 1:length(GT_CDF) % plot의 목적이므로 추가 작업 필요
+    if i <= 2
+        GT_CDF(i) = 0;
+    else % CDF 생성
+        if i == 3
+            GT_CDF(i) = GT(i-2);
+        else
+            GT_CDF(i) = GT(i-2) + GT_CDF(i-1);
+        end
+    end
+end
+
+y_max = max(avg_arr); % ylim을 위해 최대 확률을 구한다.
+
 figure(1) % PMF plot
 x = 0:length(avg_arr)-1; % x값을 0부터 시작하게끔 한다.
 stem(x, avg_arr, "r") % discrete 하므로 
@@ -70,11 +85,11 @@ title("PMF, Poisson") % title 선언
 xlabel("number of event") % x축 = event가 일어난 횟수
 ylabel("probability") % y축 = 확률
 xlim([-10, 100]) % 대채로 ~100까지 범위안에 모든 값이 분포
-ylim([-0.1, 0.5]) % 대체로 ~0.5안에 확률이 분포
+ylim([-0.1, y_max + 0.1]) % 최대 확률 + 0.1을 통해 y값 제한
 
 figure(2) % CDF plot
 x = -2:length(CDF_arr)-1; % x축을 -2 ~ len(CDF_arr)-1로 설정
-stairs(x, plot_CDF_arr) % 계단함수가로 CDF를 plot
+stairs(x, plot_CDF_arr) % 계단함수로 CDF를 plot
 title("CDF, Poisson") % title 선언
 xlim([-10, 100]) % PMF와 마찬가지로 ~100이내로 제한
 ylim([-0.5, 1.5]) % 0~1사이에 CDF value가 분포하므로 적절한 값 설정
@@ -87,8 +102,20 @@ x = 0:length(avg_arr)-1; % x값을 0부터 시작하게끔 한다.
 stem(x, avg_arr, "-.^r") % PMF를 그릴 때 GT data와의 명료한 비교를 위해
 stem(x, GT, "--og") % -.^r, --og를 사용
 legend(["generated", "GT"]) % legend
-title("generated vs GT (Poisson)") % title 선언
+title("generated vs GT (Poisson, PMF)") % title 선언
 xlim([-10, 100]) % ~100이내로 제한
-ylim([-0.1, 0.5]) % PMF와 마찬가지로 ~0.5로 제한
+ylim([-0.1, y_max + 0.1]) % 최대 확률 + 0.1을 통해 y값 제한
 xlabel("number of event") % x축 = event가 일어난 횟수
 ylabel("probability") % y축 = 확률
+
+figure(4) % GT data와의 비교 (CDF)
+hold on
+x = -2:length(CDF_arr)-1; % x축을 -2 ~ len(CDF_arr)-1만큼 하였다.
+stairs(x, plot_CDF_arr, "-.^r")
+stairs(x, GT_CDF, "--og")
+xlim([-10, 100]) % PMF와 마찬가지로 ~100이내로 제한
+ylim([-0.5 1.5])
+legend(["generated", "GT"]) % legend
+title("generated vs GT (Poisson, CDF)")
+xlabel("number of event") % x축 = 성공여부 (0: 실패, 1: 성공)
+ylabel("CDF value") % y축 = CDF 값
